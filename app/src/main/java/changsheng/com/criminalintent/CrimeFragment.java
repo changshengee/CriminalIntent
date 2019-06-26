@@ -7,8 +7,10 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +28,8 @@ import androidx.fragment.app.Fragment;
 public class CrimeFragment extends Fragment {
     private Crime mCrime;
     private EditText mTitleField;
+    private Button mDateButton;
+    private CheckBox mSolvedCheckBox;
 
     /**
      * 首先，Fragment.OnCreate(Bundle)是公共方法，而Activity.OnCreate(Bundle)
@@ -48,16 +52,17 @@ public class CrimeFragment extends Fragment {
     }
 
     /**
-     * 该方法实例化fragment视图的布局，然后将实例化的View返回给托管activity。
-     * LayoutInflater和ViewGroup是实例化布局的必要参数。Bundle用来存储恢复数据，可供该方法从保存状态下
-     * 重建视图。
-     * <p>
-     * 在onCreateView(...)方法中，fragment的视图是直接通过调用LayoutInflater.inflater(...)方法并传入
-     * 布局的资源ID生成的。第二个参数是视图的父视图，我们通常需要父视图来正确配置组件。第三个参数告知布局生成器
-     * 是否将生成的视图添加给父视图。这里，我们传入了false参数，因为我们将以activity代码的方式添加视图。
+     * 该方法实例化fragment视图的布局，然后将实例化要参数。Bundle用来存储恢复数据，可供该方法从保存状态下
+     * * 重建视图。
+     * * <p>
+     * * 在onCreateView(...)方法中，fragment的视图是直接通过调用LayoutInflater.inflater(...)方法并传入
+     * * 布局的资源ID生成的。第二个参数是视图的父视图，我们通常需要父视图来正确配置组件。第三个参数告知布局生成器
+     * * 是否将生成的视图添加给父视图。这里，我们传入了false参数，因为我们将以activity代码的方式添加视图。
+     * *
+     * * @param inflater           布局参数
+     * * @param container          父视图参数的View返回给托管activity。
+     * LayoutInflater和ViewGroup是实例化布局的必
      *
-     * @param inflater           布局参数
-     * @param container          父视图参数
      * @param savedInstanceState 保存状态
      * @return 视图
      */
@@ -80,6 +85,16 @@ public class CrimeFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 // This one too
+            }
+        });
+        mDateButton = view.findViewById(R.id.crime_date);
+        mDateButton.setText(mCrime.getFormatDate());
+        mDateButton.setEnabled(false);
+        mSolvedCheckBox=view.findViewById(R.id.crime_solved);
+        mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isSolved) {
+                mCrime.setSolved(isSolved);
             }
         });
         return view;
