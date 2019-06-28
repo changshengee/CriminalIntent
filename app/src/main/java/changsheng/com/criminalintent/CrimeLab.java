@@ -11,6 +11,7 @@ public class CrimeLab {
 
     private List<Crime> mCrimes;
 
+
     public static CrimeLab get(Context context) {
         if (sCrimeLab == null) {
             sCrimeLab = new CrimeLab(context);
@@ -29,13 +30,23 @@ public class CrimeLab {
         }
     }
 
+    public int getFocusPosition(UUID id) {
+        for (int i = 0; i < mCrimes.size(); i++) {
+            Crime crime = mCrimes.get(i);
+            if (crime.getId().equals(id)) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
     public List<Crime> getCrimes() {
         return mCrimes;
     }
 
     public Crime getCrime(UUID id) {
         for (Crime crime : mCrimes) {
-            if (id.equals(crime.getId())) {
+            if (crime.getId().equals(id)) {
                 return crime;
             }
         }

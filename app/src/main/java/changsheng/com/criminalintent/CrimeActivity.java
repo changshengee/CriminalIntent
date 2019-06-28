@@ -1,12 +1,11 @@
 package changsheng.com.criminalintent;
 
-import android.os.Bundle;
+import android.content.Context;
+import android.content.Intent;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
 
-import java.text.SimpleDateFormat;
+import java.util.UUID;
 
 /**
  * 在Fragment类中引入Honeycomb的时候，为协同工作，Activity类中相应添加了
@@ -21,8 +20,18 @@ import java.text.SimpleDateFormat;
  */
 public class CrimeActivity extends SingleFragmentActivity {
 
+    private static final String EXTRA_CRIME_ID = "changsheng.com.criminalintent.crime_id";
+
+    public static Intent newIntent(Context packageContext, UUID crimeId) {
+        Intent i = new Intent(packageContext, CrimeActivity.class);
+        i.putExtra(EXTRA_CRIME_ID, crimeId);
+        return i;
+    }
+
     @Override
     protected Fragment createFragment() {
-        return new CrimeFragment();
+        UUID crimeId = (UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
+        return CrimeFragment.newInstance(crimeId);
     }
+
 }

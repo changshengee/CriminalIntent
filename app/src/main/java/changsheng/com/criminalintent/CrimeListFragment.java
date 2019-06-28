@@ -1,10 +1,12 @@
 package changsheng.com.criminalintent;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,12 +16,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import java.util.UUID;
 
 class CrimeListFragment extends Fragment {
 
+    private static final int REQUEST_CRIME = 1;
     private RecyclerView mRecycleListView;
 
     private CrimeAdapter mCrimeAdapter;
+
+    private UUID changedCrimeId;
 
     /**
      * 注意，没有LayoutManager支持，不仅RecyclerView无法工作，还会导致应用崩溃。所以
@@ -39,7 +45,7 @@ class CrimeListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragement_crime_list, container, false);
         mRecycleListView = view.findViewById(R.id.crime_recycler_list);
         mRecycleListView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        updateUI();
+        updateUi();
         return view;
     }
 
@@ -48,19 +54,22 @@ class CrimeListFragment extends Fragment {
      * <p>
      * 该方法创建CrimeAdapter，然后设置给RecyclerView
      */
-    private void updateUI() {
+    private void updateUi() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
-        mCrimeAdapter = new CrimeAdapter(crimes);
-        mRecycleListView.setAdapter(mCrimeAdapter);
-
+        if (mCrimeAdapter == null) {
+            mCrimeAdapter = new CrimeAdapter(crimes);
+            mRecycleListView.setAdapter(mCrimeAdapter);
+        } else {
+            mCrimeAdapter.notifyDataSetChanged();
+        }
     }
 
 
     /**
      * ViewHolder类引用了用于显示crime标题的TextView视图。这就要求itemView必须是个TextView，否则代码会崩溃。
      */
-    private class CrimeHolder extends RecyclerView.ViewHolder {
+    private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView mTitleTextView;
 
@@ -70,21 +79,34 @@ class CrimeListFragment extends Fragment {
 
         private Crime mCrime;
 
-        public CrimeHolder(@NonNull View itemView) {
+        CrimeHolder(@NonNull View itemView) {
             super(itemView);
+            itemView.setOnClickListener(this);
             mTitleTextView = itemView.findViewById(R.id.list_item_crime_title_text_view);
             mDateTextView = itemView.findViewById(R.id.list_item_crime_date_text_view);
             mSolvedCheckBox = itemView.findViewById(R.id.list_item_crime_solved_check_box);
         }
 
 
-        public void bindCrime(Crime crime) {
+        void bindCrime(Crime crime) {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(mCrime.getFormatDate());
             mSolvedCheckBox.setChecked(mCrime.isSolved());
+            mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean isSolved) {
+                    mCrime.setSolved(isSolved);
+                }
+            });
         }
 
+        @Override
+        public void onClick(View view) {
+            // Toast.makeText(getActivity(), mCrime.getTitle() + " clicked!", Toast.LENGTH_SHORT).show();
+            Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
+            startActivityForResult(intent, REQUEST_CRIME);
+        }
     }
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
@@ -131,6 +153,34 @@ class CrimeListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mCrimes.size();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        resumeUi();
+    }
+
+    private void resumeUi() {
+        CrimeLab crimeLab = CrimeLab.get(getActivity());
+        List<Crime> crimes = crimeLab.getCrimes();
+        if (mCrimeAdapter == null) {
+            mCrimeAdapter = new CrimeAdapter(crimes);
+            mRecycleListView.setAdapter(mCrimeAdapter);
+        } else {
+            mCrimeAdapter.notifyItemChanged(crimeLab.getFocusPosition(this.changedCrimeId));
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (data == null) {
+            return;
+        }
+        if (requestCode == REQUEST_CRIME) {
+            this.changedCrimeId = (UUID) data.getSerializableExtra(CrimeFragment.EXTRA_CRIME_ID);
+            resumeUi();
         }
     }
 }
