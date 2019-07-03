@@ -14,13 +14,16 @@
         android:theme="@style/AppTheme">
         <activity android:name=".CrimeListActivity">
             <intent-filter>
+                <!--用于显示用户的数据。比较通用，会根据用户的数据类型打开相应的Activity。-->
+                <action android:name="android.intent.action.VIEW" />
+                <!--标识一个activity为一个程序的开始，比较常用-->
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".CrimeActivity"
+            android:name=".CrimePagerActivity"
             android:label="@string/app_name" />
     </application>
 
