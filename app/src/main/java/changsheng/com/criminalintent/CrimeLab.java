@@ -1,17 +1,32 @@
 package changsheng.com.criminalintent;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import changsheng.com.criminalintent.dao.CrimeBaseHelper;
+
+/**
+ * @author changshengee
+ */
 public class CrimeLab {
+
     private static CrimeLab sCrimeLab;
 
     private List<Crime> mCrimes;
 
+    private Context mContext;
 
+    private SQLiteDatabase mDatabase;
+
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
     public static CrimeLab get(Context context) {
         if (sCrimeLab == null) {
             sCrimeLab = new CrimeLab(context);
@@ -19,8 +34,22 @@ public class CrimeLab {
         return sCrimeLab;
     }
 
+// todo 2019/7/18
 
+    /**
+     * 打开SQLiteDataBase
+     * <p>
+     * 调用getWritableDatabase(),CrimeBaseHelper要做如下工作
+     * 1、打开data/data/com.xxx.xxx/databases/crimeBase.db数据库;如果不存在，就先创建。
+     * 2、如果是首次创建数据库，就调用onCreate(SQLiteDatabase.db)方法，然后保存最新的版本号。
+     * 3、如果已创建过数据库，首先检查它的版本号。如果CrimeOpenHelper中的版本号更高，就调用onUpgrade(...)方法升级
+     *
+     * @param context context
+     */
+    @RequiresApi(api = Build.VERSION_CODES.P)
     public CrimeLab(Context context) {
+        mContext = context.getApplicationContext();
+        mDatabase = new CrimeBaseHelper(mContext).getWritableDatabase();
         mCrimes = new ArrayList<>();
     }
 
