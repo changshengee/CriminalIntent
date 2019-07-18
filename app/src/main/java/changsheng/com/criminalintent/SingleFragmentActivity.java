@@ -3,6 +3,7 @@ package changsheng.com.criminalintent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -10,7 +11,7 @@ import androidx.fragment.app.FragmentManager;
 /**
  * @author changshengee
  */
-public abstract class SingleFragmentActivity extends FragmentActivity {
+public abstract class SingleFragmentActivity extends AppCompatActivity {
     /**
      * SingleFragmentActivity的子类会实现该方法，来返回由activity托管的实例
      *
