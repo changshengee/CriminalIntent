@@ -18,7 +18,7 @@ import java.util.UUID;
  *
  * @author changshengee
  */
-public class CrimeActivity extends SingleFragmentActivity {
+public class CrimeActivity extends BaseSingleFragmentActivity {
 
     private static final String EXTRA_CRIME_ID = "changsheng.com.criminalintent.crime_id";
 

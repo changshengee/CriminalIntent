@@ -18,6 +18,7 @@ import androidx.fragment.app.DialogFragment;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 
 /**
@@ -29,9 +30,9 @@ public class TimePickerFragment extends DialogFragment {
 
     private TimePicker mTimePicker;
 
-    public   static  final  String EXTRA_DATA="com.changsheng.criminalintent.time";
+    static  final  String EXTRA_DATA="com.changsheng.criminalintent.time";
 
-    public static TimePickerFragment newInstance(Date date) {
+    static TimePickerFragment newInstance(Date date) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_DATE, date);
         TimePickerFragment df = new TimePickerFragment();
@@ -43,9 +44,9 @@ public class TimePickerFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        final Date date = (Date) getArguments().getSerializable(ARG_DATE);
+        final Date date = (Date) Objects.requireNonNull(getArguments()).getSerializable(ARG_DATE);
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(Objects.requireNonNull(date));
         int hour = calendar.get(Calendar.HOUR);
         int minute = calendar.get(Calendar.MINUTE);
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_time, null);

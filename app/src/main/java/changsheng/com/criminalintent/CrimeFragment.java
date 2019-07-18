@@ -3,6 +3,7 @@ package changsheng.com.criminalintent;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,10 +20,12 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -38,7 +41,7 @@ public class CrimeFragment extends Fragment {
 
     private static final String ARG_CRIME_ID = "crime_id";
 
-    public static final String EXTRA_CRIME_ID = "changsheng.com.criminalintent.extra_crime_id";
+    static final String EXTRA_CRIME_ID = "changsheng.com.criminalintent.extra_crime_id";
 
     private static final String DIALOG_DATE = "DialogDate";
 
@@ -54,7 +57,7 @@ public class CrimeFragment extends Fragment {
     private CheckBox mSolvedCheckBox;
     private Button mTimeButton;
 
-    public static CrimeFragment newInstance(UUID crimeId) {
+    static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
         CrimeFragment crimeFragment = new CrimeFragment();
@@ -77,11 +80,12 @@ public class CrimeFragment extends Fragment {
      *
      * @param savedInstanceState 状态
      */
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
+        UUID crimeId = (UUID) Objects.requireNonNull(getArguments()).getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
     }
 
@@ -125,23 +129,25 @@ public class CrimeFragment extends Fragment {
         mDateButton = view.findViewById(R.id.crime_date);
         mDateButton.setText(mCrime.getFormatDate());
         mDateButton.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View view) {
                 FragmentManager fm = getFragmentManager();
                 DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
                 dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
-                dialog.show(fm, DIALOG_DATE);
+                dialog.show(Objects.requireNonNull(fm), DIALOG_DATE);
             }
         });
         mTimeButton = view.findViewById(R.id.crime_time_picker);
         mTimeButton.setText(mCrime.getFormatTime());
         mTimeButton.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View view) {
                 FragmentManager fm = getFragmentManager();
                 TimePickerFragment dialog = TimePickerFragment.newInstance(mCrime.getDate());
                 dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
-                dialog.show(fm, DIALOG_TIME);
+                dialog.show(Objects.requireNonNull(fm), DIALOG_TIME);
             }
         });
         mSolvedCheckBox = view.findViewById(R.id.crime_solved);
@@ -156,24 +162,26 @@ public class CrimeFragment extends Fragment {
         return view;
     }
 
-    public void returnResult() {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void returnResult() {
         Intent data = new Intent();
         data.putExtra(EXTRA_CRIME_ID, mCrime.getId());
-        getActivity().setResult(Activity.RESULT_OK, data);
+        Objects.requireNonNull(getActivity()).setResult(Activity.RESULT_OK, data);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode != Activity.RESULT_OK) {
             return;
         }
         if (requestCode == REQUEST_DATE) {
-            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            Date date = (Date) Objects.requireNonNull(data).getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
             mDateButton.setText(mCrime.getFormatDate());
         }
         if (requestCode == REQUEST_TIME) {
-            Date date = (Date) data.getSerializableExtra(TimePickerFragment.EXTRA_DATA);
+            Date date = (Date) Objects.requireNonNull(data).getSerializableExtra(TimePickerFragment.EXTRA_DATA);
             mCrime.setDate(date);
             mTimeButton.setText(mCrime.getFormatTime());
         }
@@ -185,13 +193,14 @@ public class CrimeFragment extends Fragment {
         inflater.inflate(R.menu.fragment_crime, menu);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.menu_item_del_item) {
             CrimeLab.get(getActivity()).delCrime(mCrime);
             Intent intent = new Intent(getActivity(), CrimeListActivity.class);
             startActivity(intent);
-            this.getActivity().finish();
+            Objects.requireNonNull(this.getActivity()).finish();
             return false;
         }
         return super.onOptionsItemSelected(item);

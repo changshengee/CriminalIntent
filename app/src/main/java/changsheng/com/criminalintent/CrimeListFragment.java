@@ -1,6 +1,7 @@
 package changsheng.com.criminalintent;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -10,17 +11,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 class CrimeListFragment extends Fragment {
@@ -132,7 +134,7 @@ class CrimeListFragment extends Fragment {
 
         private List<Crime> mCrimes;
 
-        public CrimeAdapter(List<Crime> crimes) {
+        CrimeAdapter(List<Crime> crimes) {
             mCrimes = crimes;
         }
 
@@ -145,9 +147,9 @@ class CrimeListFragment extends Fragment {
          * 为了得到View视图，我们实例化了android标准库中名为simple_list_item_1的布局。
          * 该布局定义了美观的TextView视图，主要用于列表项的展示。
          *
-         * @param parent
-         * @param viewType
-         * @return
+         * @param parent   parent
+         * @param viewType type
+         * @return holder
          */
         @NonNull
         @Override
@@ -161,8 +163,8 @@ class CrimeListFragment extends Fragment {
          * 该方法会把ViewHolder的View视图和模型层数据绑定起来。收到ViewHolder和列表项在数据集中的索引位置后，我们
          * 找到要显示的数据进行绑定,绑定完毕，刷新View视图。
          *
-         * @param holder
-         * @param position
+         * @param holder   holder
+         * @param position position
          */
         @Override
         public void onBindViewHolder(@NonNull CrimeHolder holder, int position) {
@@ -216,6 +218,7 @@ class CrimeListFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -227,7 +230,7 @@ class CrimeListFragment extends Fragment {
                 return true;
             case R.id.menu_item_show_subtitle:
                 mSubtitleVisible = !mSubtitleVisible;
-                getActivity().invalidateOptionsMenu();
+                Objects.requireNonNull(getActivity()).invalidateOptionsMenu();
                 updateSubTitle();
                 return true;
             default:
@@ -235,6 +238,7 @@ class CrimeListFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void updateSubTitle() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         int crimeCount = crimeLab.getCrimes().size();
@@ -243,7 +247,7 @@ class CrimeListFragment extends Fragment {
             subTitle = null;
         }
         AppCompatActivity activity = (AppCompatActivity) getActivity();
-        activity.getSupportActionBar().setSubtitle(subTitle);
+        Objects.requireNonNull(Objects.requireNonNull(activity).getSupportActionBar()).setSubtitle(subTitle);
     }
 
     @Override
