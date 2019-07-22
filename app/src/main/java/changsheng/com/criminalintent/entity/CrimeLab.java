@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent;
+package changsheng.com.criminalintent.entity;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

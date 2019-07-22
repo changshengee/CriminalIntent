@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import changsheng.com.criminalintent.entity.Crime;
+import changsheng.com.criminalintent.entity.CrimeLab;
+
 class CrimeListFragment extends Fragment {
 
     private static final int REQUEST_CRIME = 1;

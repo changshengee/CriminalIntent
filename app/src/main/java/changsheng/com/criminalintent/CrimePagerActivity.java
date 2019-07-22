@@ -15,6 +15,9 @@ import androidx.viewpager.widget.ViewPager;
 import java.util.List;
 import java.util.UUID;
 
+import changsheng.com.criminalintent.entity.Crime;
+import changsheng.com.criminalintent.entity.CrimeLab;
+
 /**
  * @author changshengee
  */

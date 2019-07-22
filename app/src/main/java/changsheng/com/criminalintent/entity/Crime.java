@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent;
+package changsheng.com.criminalintent.entity;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

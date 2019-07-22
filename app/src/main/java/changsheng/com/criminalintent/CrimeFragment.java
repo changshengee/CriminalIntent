@@ -28,6 +28,9 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
+import changsheng.com.criminalintent.entity.Crime;
+import changsheng.com.criminalintent.entity.CrimeLab;
+
 /**
  * CrimeFragment类是与模型及视图对象交互的控制器，用于显示特定的crime的明细
  * 信息，并在用户修改这些信息后立即进行更新。
