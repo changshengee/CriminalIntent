@@ -1,6 +1,7 @@
 package changsheng.com.criminalintent;
 
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
@@ -83,6 +84,7 @@ public class CrimeFragment extends Fragment {
      *
      * @param savedInstanceState 状态
      */
+    @TargetApi(Build.VERSION_CODES.P)
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -90,6 +92,13 @@ public class CrimeFragment extends Fragment {
         setHasOptionsMenu(true);
         UUID crimeId = (UUID) Objects.requireNonNull(getArguments()).getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    @Override
+    public void onPause() {
+        super.onPause();
+        CrimeLab.get(getActivity()).update(mCrime);
     }
 
     /**

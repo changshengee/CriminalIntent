@@ -26,9 +26,14 @@ public class Crime {
         mTitle = title;
     }
 
-    public Crime() {
+
+    public Crime(UUID id) {
+        mId = id;
         mDate = new Date();
-        mId = UUID.randomUUID();
+    }
+
+    public Crime() {
+        this(UUID.randomUUID());
     }
 
     public boolean isSolved() {

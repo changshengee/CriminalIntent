@@ -1,5 +1,6 @@
 package changsheng.com.criminalintent;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -59,6 +60,7 @@ class CrimeListFragment extends Fragment {
      * @param savedInstanceState c
      * @return view
      */
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -77,6 +79,7 @@ class CrimeListFragment extends Fragment {
      * <p>
      * 该方法创建CrimeAdapter，然后设置给RecyclerView
      */
+    @RequiresApi(api = Build.VERSION_CODES.P)
     private void updateUi() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
@@ -84,6 +87,7 @@ class CrimeListFragment extends Fragment {
             mCrimeAdapter = new CrimeAdapter(crimes);
             mRecycleListView.setAdapter(mCrimeAdapter);
         } else {
+            mCrimeAdapter.setCrimes(crimes);
             mCrimeAdapter.notifyDataSetChanged();
         }
     }
@@ -179,14 +183,20 @@ class CrimeListFragment extends Fragment {
         public int getItemCount() {
             return mCrimes.size();
         }
+
+        public void setCrimes(List<Crime> crimes) {
+            mCrimes = crimes;
+        }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public void onResume() {
         super.onResume();
         resumeUi();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     private void resumeUi() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
@@ -198,6 +208,7 @@ class CrimeListFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (data == null) {
@@ -221,6 +232,7 @@ class CrimeListFragment extends Fragment {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.P)
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -241,6 +253,7 @@ class CrimeListFragment extends Fragment {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.P)
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void updateSubTitle() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
