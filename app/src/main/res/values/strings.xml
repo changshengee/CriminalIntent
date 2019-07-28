@@ -14,4 +14,15 @@
     <string name="subtitle_format">%os crimes</string>
     <string name="del_crime">Delete Crime</string>
     <string name="empty_crime">NO Crime Can Be Show!</string>
+    <string name="crime_suspect_text">CHOOSE SUSPECT</string>
+    <string name="crime_report_text">SEND CRIME REPORT</string>
+    <string name="crime_report">
+        The Crime was discovered on %2$s. %3$s, and %4$s
+    </string>
+    <string name="crime_report_solved">The case is solved</string>
+    <string name="crime_report_unsolved">The case is not solved</string>
+    <string name="crime_report_no_suspect">there is no suspect</string>
+    <string name="crime_report_suspect">the suspect is %s.</string>
+    <string name="crime_report_subject">CriminalIntent Crime Report</string>
+    <string name="send_report">Send crime report via</string>
 </resources>

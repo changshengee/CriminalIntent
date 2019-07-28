@@ -4,10 +4,14 @@ package changsheng.com.criminalintent;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,10 +22,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ShareCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -54,12 +60,16 @@ public class CrimeFragment extends Fragment {
 
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
+    private static final int REQUEST_CONTACT = 2;
 
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
     private Button mTimeButton;
+    private Button mReportButton;
+    private Button mSuspectButton;
+
 
     static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -101,6 +111,11 @@ public class CrimeFragment extends Fragment {
         CrimeLab.get(getActivity()).update(mCrime);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
     /**
      * 该方法实例化fragment视图的布局，然后将实例化要参数。Bundle用来存储恢复数据，可供该方法从保存状态下
      * * 重建视图。
@@ -116,6 +131,8 @@ public class CrimeFragment extends Fragment {
      * @param savedInstanceState 保存状态
      * @return 视图
      */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -170,6 +187,36 @@ public class CrimeFragment extends Fragment {
                 mCrime.setSolved(isSolved);
             }
         });
+        mReportButton = view.findViewById(R.id.crime_report);
+        mReportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = ShareCompat.IntentBuilder.from(Objects.requireNonNull(getActivity())).getIntent();
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+                i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
+                i = Intent.createChooser(i, getString(R.string.send_report));
+                startActivity(i);
+            }
+        });
+        final Intent pickContact = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        // 验证过滤器 不让任何联系人应用和intent匹配
+        //pickContact.addCategory(Intent.CATEGORY_HOME);
+        mSuspectButton = view.findViewById(R.id.crime_suspect);
+        mSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 第二个参数必须是大于等于0的
+                startActivityForResult(pickContact, REQUEST_CONTACT);
+            }
+        });
+        if (mCrime.getmSuspect() != null) {
+            mSuspectButton.setText(mCrime.getmSuspect());
+        }
+        PackageManager pm = Objects.requireNonNull(getActivity()).getPackageManager();
+        if (pm.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null) {
+            mSuspectButton.setEnabled(false);
+        }
         returnResult();
         return view;
     }
@@ -183,7 +230,7 @@ public class CrimeFragment extends Fragment {
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
             return;
         }
@@ -197,6 +244,33 @@ public class CrimeFragment extends Fragment {
             mCrime.setDate(date);
             mTimeButton.setText(mCrime.getFormatTime());
         }
+        if (requestCode == REQUEST_CONTACT && data != null) {
+            Uri contactUri = data.getData();
+            // Specify which fields you want your query to return
+            // values for
+            String[] queryFields = new String[]{
+                    ContactsContract.Contacts.DISPLAY_NAME
+            };
+            // Perform your query - the contactUri is like a "where"
+            // clause here
+            Cursor c = Objects.requireNonNull(getActivity()).getContentResolver().query(
+                    Objects.requireNonNull(contactUri),
+                    queryFields,
+                    null,
+                    null,
+                    null);
+            try {
+                if (Objects.requireNonNull(c).getCount() == 0) {
+                    return;
+                }
+                c.moveToFirst();
+                String suspect = c.getString(0);
+                mCrime.setmSuspect(suspect);
+                mSuspectButton.setText(suspect);
+            } finally {
+                Objects.requireNonNull(c).close();
+            }
+        }
     }
 
     @Override
@@ -205,6 +279,7 @@ public class CrimeFragment extends Fragment {
         inflater.inflate(R.menu.fragment_crime, menu);
     }
 
+    @TargetApi(Build.VERSION_CODES.P)
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -216,5 +291,19 @@ public class CrimeFragment extends Fragment {
             return false;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private String getCrimeReport() {
+        String solvedString;
+        if (mCrime.isSolved()) {
+            solvedString = getString(R.string.crime_report_solved);
+        } else {
+            solvedString = getString(R.string.crime_report_unsolved);
+        }
+        String dateFormat = "EEE，MMM dd";
+        String dateString = DateFormat.format(dateFormat, mCrime.getDate()).toString();
+        String suspect = mCrime.getmSuspect();
+        suspect = suspect == null ? getString(R.string.crime_report_no_suspect) : getString(R.string.crime_report_suspect, suspect);
+        return getString(R.string.crime_report, mCrime.getTitle(), dateString, solvedString, suspect);
     }
 }

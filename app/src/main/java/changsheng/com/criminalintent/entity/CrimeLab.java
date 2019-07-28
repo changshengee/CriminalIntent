@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 import changsheng.com.criminalintent.dao.CrimeBaseHelper;
-import changsheng.com.criminalintent.dao.CrimeDbSchema;
 import changsheng.com.criminalintent.dao.CrimeDbSchema.CrimeTable;
 
 /**
@@ -71,7 +70,7 @@ public class CrimeLab {
         cursor.moveToFirst();
         try {
             while (!cursor.isAfterLast()) {
-                crimes.add(cursor.getcrime());
+                crimes.add(cursor.getCrime());
                 cursor.moveToNext();
             }
         } finally {
@@ -87,7 +86,7 @@ public class CrimeLab {
                 return null;
             }
             cursor.moveToFirst();
-            return cursor.getcrime();
+            return cursor.getCrime();
         } finally {
             cursor.close();
         }
@@ -116,6 +115,7 @@ public class CrimeLab {
         cv.put(CrimeTable.Cols.TITLE, crime.getTitle());
         cv.put(CrimeTable.Cols.DATE, crime.getDate().toString());
         cv.put(CrimeTable.Cols.SOLVED, crime.isSolved() ? 1 : 0);
+        cv.put(CrimeTable.Cols.SUSPECT, crime.getmSuspect());
         return cv;
     }
 
@@ -131,6 +131,5 @@ public class CrimeLab {
                 null
         );
         return new CrimeCursorWrapper(cursor);
-
     }
 }
