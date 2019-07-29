@@ -1,15 +1,12 @@
-package changsheng.com.criminalintent.entity;
+package com.changsheng.criminalintent.entity;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
-import changsheng.com.criminalintent.dao.CrimeDbSchema;
-import changsheng.com.criminalintent.dao.CrimeDbSchema.CrimeTable;
+import com.changsheng.criminalintent.dao.CrimeDbSchema.CrimeTable;
 
 /**
  * @author changshengee
@@ -30,7 +27,7 @@ public class CrimeCursorWrapper extends CursorWrapper {
         crime.setTitle(title);
         crime.setDate(new Date(date));
         crime.setSolved(isSolved != 0);
-        crime.setmSuspect(suspect);
+        crime.setSuspect(suspect);
         return crime;
     }
 

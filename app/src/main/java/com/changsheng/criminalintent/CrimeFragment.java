@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent;
+package com.changsheng.criminalintent;
 
 
 import android.annotation.TargetApi;
@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -23,20 +24,24 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.net.Uri;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ShareCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import changsheng.com.criminalintent.entity.Crime;
-import changsheng.com.criminalintent.entity.CrimeLab;
+import com.changsheng.criminalintent.entity.Crime;
+import com.changsheng.criminalintent.entity.CrimeLab;
 
 /**
  * CrimeFragment类是与模型及视图对象交互的控制器，用于显示特定的crime的明细
@@ -51,7 +56,7 @@ public class CrimeFragment extends Fragment {
 
     private static final String ARG_CRIME_ID = "crime_id";
 
-    static final String EXTRA_CRIME_ID = "changsheng.com.criminalintent.extra_crime_id";
+    static final String EXTRA_CRIME_ID = "com.changsheng.criminalintent.extra_crime_id";
 
     private static final String DIALOG_DATE = "DialogDate";
 
@@ -61,6 +66,7 @@ public class CrimeFragment extends Fragment {
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
+    private static final int REQUEST_PHOTO = 3;
 
     private Crime mCrime;
     private EditText mTitleField;
@@ -69,6 +75,9 @@ public class CrimeFragment extends Fragment {
     private Button mTimeButton;
     private Button mReportButton;
     private Button mSuspectButton;
+    private ImageButton mPhotoButton;
+    private ImageView mPhotoView;
+    private File mPhotoFile;
 
 
     static CrimeFragment newInstance(UUID crimeId) {
@@ -102,6 +111,7 @@ public class CrimeFragment extends Fragment {
         setHasOptionsMenu(true);
         UUID crimeId = (UUID) Objects.requireNonNull(getArguments()).getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
+        mPhotoFile = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -210,13 +220,32 @@ public class CrimeFragment extends Fragment {
                 startActivityForResult(pickContact, REQUEST_CONTACT);
             }
         });
-        if (mCrime.getmSuspect() != null) {
-            mSuspectButton.setText(mCrime.getmSuspect());
+        if (mCrime.getSuspect() != null) {
+            mSuspectButton.setText(mCrime.getSuspect());
         }
         PackageManager pm = Objects.requireNonNull(getActivity()).getPackageManager();
         if (pm.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null) {
             mSuspectButton.setEnabled(false);
         }
+        mPhotoButton = view.findViewById(R.id.crime_camera);
+        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        boolean canTakePhoto = mPhotoFile != null && captureImage.resolveActivity(pm) != null;
+        mPhotoButton.setEnabled(canTakePhoto);
+        if (canTakePhoto) {
+            //i uri = Uri.fromFile(mPhotoFile);
+            Uri uri = FileProvider.getUriForFile(getActivity().getApplicationContext(),
+                    getActivity().getPackageName() + ".fileProvider",
+                    mPhotoFile);
+            captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        }
+        mPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(captureImage, REQUEST_PHOTO);
+            }
+        });
+
+        mPhotoView = view.findViewById(R.id.crime_photo);
         returnResult();
         return view;
     }
@@ -265,7 +294,7 @@ public class CrimeFragment extends Fragment {
                 }
                 c.moveToFirst();
                 String suspect = c.getString(0);
-                mCrime.setmSuspect(suspect);
+                mCrime.setSuspect(suspect);
                 mSuspectButton.setText(suspect);
             } finally {
                 Objects.requireNonNull(c).close();
@@ -302,7 +331,7 @@ public class CrimeFragment extends Fragment {
         }
         String dateFormat = "EEE，MMM dd";
         String dateString = DateFormat.format(dateFormat, mCrime.getDate()).toString();
-        String suspect = mCrime.getmSuspect();
+        String suspect = mCrime.getSuspect();
         suspect = suspect == null ? getString(R.string.crime_report_no_suspect) : getString(R.string.crime_report_suspect, suspect);
         return getString(R.string.crime_report, mCrime.getTitle(), dateString, solvedString, suspect);
     }

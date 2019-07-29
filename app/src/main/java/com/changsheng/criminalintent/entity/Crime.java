@@ -1,4 +1,6 @@
-package changsheng.com.criminalintent.entity;
+package com.changsheng.criminalintent.entity;
+
+import androidx.core.content.FileProvider;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -63,11 +65,15 @@ public class Crime {
         mDate = date;
     }
 
-    public String getmSuspect() {
+    public String getSuspect() {
         return mSuspect;
     }
 
-    public void setmSuspect(String mSuspect) {
+    public void setSuspect(String mSuspect) {
         this.mSuspect = mSuspect;
+    }
+
+    public String getPhotoFilename() {
+        return "IMG" + getId().toString() + ".jpg";
     }
 }

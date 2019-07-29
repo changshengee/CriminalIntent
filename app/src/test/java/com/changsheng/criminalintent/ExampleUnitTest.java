@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent;
+package com.changsheng.criminalintent;
 
 import org.junit.Test;
 

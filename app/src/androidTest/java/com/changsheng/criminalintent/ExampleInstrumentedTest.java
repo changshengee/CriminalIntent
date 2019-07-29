@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent;
+package com.changsheng.criminalintent;
 
 import android.content.Context;
 
@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("changsheng.com.criminalintent", appContext.getPackageName());
+        assertEquals("com.changsheng.criminalintent", appContext.getPackageName());
     }
 }

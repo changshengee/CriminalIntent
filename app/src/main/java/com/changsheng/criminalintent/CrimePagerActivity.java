@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent;
+package com.changsheng.criminalintent;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,15 +17,15 @@ import androidx.viewpager.widget.ViewPager;
 import java.util.List;
 import java.util.UUID;
 
-import changsheng.com.criminalintent.entity.Crime;
-import changsheng.com.criminalintent.entity.CrimeLab;
+import com.changsheng.criminalintent.entity.Crime;
+import com.changsheng.criminalintent.entity.CrimeLab;
 
 /**
  * @author changshengee
  */
 public class CrimePagerActivity extends AppCompatActivity {
 
-    public static final String EXTRA_CRIME_ID = "changsheng.com.criminalintent.crime_id";
+    public static final String EXTRA_CRIME_ID = "com.changsheng.criminalintent.crime_id";
 
     private ViewPager mViewPager;
     private List<Crime> mCrimes;

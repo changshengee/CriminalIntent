@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent;
+package com.changsheng.criminalintent;
 
 import android.content.Context;
 import android.content.Intent;
@@ -20,7 +20,7 @@ import java.util.UUID;
  */
 public class CrimeActivity extends BaseSingleFragmentActivity {
 
-    private static final String EXTRA_CRIME_ID = "changsheng.com.criminalintent.crime_id";
+    private static final String EXTRA_CRIME_ID = "com.changsheng.criminalintent.crime_id";
 
     public static Intent newIntent(Context packageContext, UUID crimeId) {
         Intent i = new Intent(packageContext, CrimeActivity.class);

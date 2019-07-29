@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent.dao;
+package com.changsheng.criminalintent.dao;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -7,7 +7,7 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import changsheng.com.criminalintent.dao.CrimeDbSchema.CrimeTable;
+import com.changsheng.criminalintent.dao.CrimeDbSchema.CrimeTable;
 
 /**
  * @author changshengee

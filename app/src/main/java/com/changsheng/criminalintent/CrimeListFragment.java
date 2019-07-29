@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent;
+package com.changsheng.criminalintent;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import changsheng.com.criminalintent.entity.Crime;
-import changsheng.com.criminalintent.entity.CrimeLab;
+import com.changsheng.criminalintent.entity.Crime;
+import com.changsheng.criminalintent.entity.CrimeLab;
 
 class CrimeListFragment extends Fragment {
 

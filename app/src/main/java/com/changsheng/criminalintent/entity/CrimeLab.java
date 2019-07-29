@@ -1,19 +1,21 @@
-package changsheng.com.criminalintent.entity;
+package com.changsheng.criminalintent.entity;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
+import android.os.Environment;
 
 import androidx.annotation.RequiresApi;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import changsheng.com.criminalintent.dao.CrimeBaseHelper;
-import changsheng.com.criminalintent.dao.CrimeDbSchema.CrimeTable;
+import com.changsheng.criminalintent.dao.CrimeBaseHelper;
+import com.changsheng.criminalintent.dao.CrimeDbSchema.CrimeTable;
 
 /**
  * @author changshengee
@@ -48,7 +50,7 @@ public class CrimeLab {
      * @param context context
      */
     @RequiresApi(api = Build.VERSION_CODES.P)
-    public CrimeLab(Context context) {
+    private CrimeLab(Context context) {
         mContext = context.getApplicationContext();
         mDatabase = new CrimeBaseHelper(mContext).getWritableDatabase();
     }
@@ -79,16 +81,14 @@ public class CrimeLab {
         return crimes;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public Crime getCrime(UUID id) {
-        CrimeCursorWrapper cursor = queryCrimes(CrimeTable.Cols.UUID + " =?", new String[]{id.toString()});
-        try {
+        try (CrimeCursorWrapper cursor = queryCrimes(CrimeTable.Cols.UUID + " =?", new String[]{id.toString()})) {
             if (cursor.getCount() == 0) {
                 return null;
             }
             cursor.moveToFirst();
             return cursor.getCrime();
-        } finally {
-            cursor.close();
         }
     }
 
@@ -115,7 +115,7 @@ public class CrimeLab {
         cv.put(CrimeTable.Cols.TITLE, crime.getTitle());
         cv.put(CrimeTable.Cols.DATE, crime.getDate().toString());
         cv.put(CrimeTable.Cols.SOLVED, crime.isSolved() ? 1 : 0);
-        cv.put(CrimeTable.Cols.SUSPECT, crime.getmSuspect());
+        cv.put(CrimeTable.Cols.SUSPECT, crime.getSuspect());
         return cv;
     }
 
@@ -131,5 +131,13 @@ public class CrimeLab {
                 null
         );
         return new CrimeCursorWrapper(cursor);
+    }
+
+    public File getPhotoFile(Crime crime) {
+        File externalFileDir = mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        if (externalFileDir == null) {
+            return null;
+        }
+        return new File(externalFileDir, crime.getPhotoFilename());
     }
 }

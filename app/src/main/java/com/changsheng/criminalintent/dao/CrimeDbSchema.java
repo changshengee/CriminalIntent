@@ -1,4 +1,4 @@
-package changsheng.com.criminalintent.dao;
+package com.changsheng.criminalintent.dao;
 
 public class CrimeDbSchema {
     public static final class CrimeTable {
