@@ -9,6 +9,10 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -30,7 +34,7 @@
             android:name=".CrimePagerActivity"
             android:label="@string/app_name"
             android:parentActivityName=".CrimeListActivity" />
-
+        <!--拍照 存储在安卓7.0后不好使，需要添加 provider-->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.changsheng.criminalintent.fileProvider"

@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -32,6 +33,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -42,6 +44,7 @@ import java.util.UUID;
 
 import com.changsheng.criminalintent.entity.Crime;
 import com.changsheng.criminalintent.entity.CrimeLab;
+import com.changsheng.criminalintent.utils.PictureUtils;
 
 /**
  * CrimeFragment类是与模型及视图对象交互的控制器，用于显示特定的crime的明细
@@ -57,6 +60,9 @@ public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID = "crime_id";
 
     static final String EXTRA_CRIME_ID = "com.changsheng.criminalintent.extra_crime_id";
+
+    private static final String DIALOG_PHOTO = "DialogPhoto";
+
 
     private static final String DIALOG_DATE = "DialogDate";
 
@@ -147,6 +153,133 @@ public class CrimeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crime, container, false);
+        final Intent pickContact = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        PackageManager pm = Objects.requireNonNull(getActivity()).getPackageManager();
+        title(view);
+        date(view);
+        time(view);
+        checkbox(view);
+        report(view);
+        suspect(view, pickContact, pm);
+        camera(view, pm);
+        photo(view);
+        returnResult();
+        return view;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void photo(View view) {
+        mPhotoView = view.findViewById(R.id.crime_photo);
+        updatePhotoView();
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentManager fm = getFragmentManager();
+                PhotoFragment dialog = PhotoFragment.newInstance(mPhotoFile.getPath());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_PHOTO);
+                dialog.show(Objects.requireNonNull(fm), DIALOG_PHOTO);
+            }
+        });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void camera(View view, PackageManager pm) {
+        mPhotoButton = view.findViewById(R.id.crime_camera);
+        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        boolean canTakePhoto = mPhotoFile != null && captureImage.resolveActivity(pm) != null;
+        mPhotoButton.setEnabled(canTakePhoto);
+        if (canTakePhoto) {
+            //i uri = Uri.fromFile(mPhotoFile);
+            Uri uri = FileProvider.getUriForFile(Objects.requireNonNull(getActivity()).getApplicationContext(),
+                    getActivity().getPackageName() + ".fileProvider",
+                    mPhotoFile);
+            captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        }
+        mPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(captureImage, REQUEST_PHOTO);
+            }
+        });
+    }
+
+    private void suspect(View view, final Intent pickContact, PackageManager pm) {
+        // 验证过滤器 不让任何联系人应用和intent匹配
+        //pickContact.addCategory(Intent.CATEGORY_HOME);
+        mSuspectButton = view.findViewById(R.id.crime_suspect);
+        mSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 第二个参数必须是大于等于0的
+                startActivityForResult(pickContact, REQUEST_CONTACT);
+            }
+        });
+        if (mCrime.getSuspect() != null) {
+            mSuspectButton.setText(mCrime.getSuspect());
+        }
+        if (pm.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null) {
+            mSuspectButton.setEnabled(false);
+        }
+    }
+
+    private void report(View view) {
+        mReportButton = view.findViewById(R.id.crime_report);
+        mReportButton.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            @Override
+            public void onClick(View view) {
+                Intent i = ShareCompat.IntentBuilder.from(Objects.requireNonNull(getActivity())).getIntent();
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+                i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
+                i = Intent.createChooser(i, getString(R.string.send_report));
+                startActivity(i);
+            }
+        });
+    }
+
+    private void checkbox(View view) {
+        mSolvedCheckBox = view.findViewById(R.id.crime_solved);
+        mSolvedCheckBox.setChecked(mCrime.isSolved());
+        mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isSolved) {
+                mCrime.setSolved(isSolved);
+            }
+        });
+    }
+
+    private void time(View view) {
+        mTimeButton = view.findViewById(R.id.crime_time_picker);
+        mTimeButton.setText(mCrime.getFormatTime());
+        mTimeButton.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            @Override
+            public void onClick(View view) {
+                FragmentManager fm = getFragmentManager();
+                TimePickerFragment dialog = TimePickerFragment.newInstance(mCrime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+                dialog.show(Objects.requireNonNull(fm), DIALOG_TIME);
+            }
+        });
+    }
+
+    private void date(View view) {
+        mDateButton = view.findViewById(R.id.crime_date);
+        mDateButton.setText(mCrime.getFormatDate());
+        mDateButton.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            @Override
+            public void onClick(View view) {
+                FragmentManager fm = getFragmentManager();
+                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+                dialog.show(Objects.requireNonNull(fm), DIALOG_DATE);
+            }
+        });
+    }
+
+    private void title(View view) {
         mTitleField = view.findViewById(R.id.crime_title);
         mTitleField.setText(mCrime.getTitle());
         mTitleField.addTextChangedListener(new TextWatcher() {
@@ -165,89 +298,6 @@ public class CrimeFragment extends Fragment {
                 // This one too
             }
         });
-        mDateButton = view.findViewById(R.id.crime_date);
-        mDateButton.setText(mCrime.getFormatDate());
-        mDateButton.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-            @Override
-            public void onClick(View view) {
-                FragmentManager fm = getFragmentManager();
-                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
-                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
-                dialog.show(Objects.requireNonNull(fm), DIALOG_DATE);
-            }
-        });
-        mTimeButton = view.findViewById(R.id.crime_time_picker);
-        mTimeButton.setText(mCrime.getFormatTime());
-        mTimeButton.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-            @Override
-            public void onClick(View view) {
-                FragmentManager fm = getFragmentManager();
-                TimePickerFragment dialog = TimePickerFragment.newInstance(mCrime.getDate());
-                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
-                dialog.show(Objects.requireNonNull(fm), DIALOG_TIME);
-            }
-        });
-        mSolvedCheckBox = view.findViewById(R.id.crime_solved);
-        mSolvedCheckBox.setChecked(mCrime.isSolved());
-        mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isSolved) {
-                mCrime.setSolved(isSolved);
-            }
-        });
-        mReportButton = view.findViewById(R.id.crime_report);
-        mReportButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = ShareCompat.IntentBuilder.from(Objects.requireNonNull(getActivity())).getIntent();
-                i.setType("text/plain");
-                i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
-                i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
-                i = Intent.createChooser(i, getString(R.string.send_report));
-                startActivity(i);
-            }
-        });
-        final Intent pickContact = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
-        // 验证过滤器 不让任何联系人应用和intent匹配
-        //pickContact.addCategory(Intent.CATEGORY_HOME);
-        mSuspectButton = view.findViewById(R.id.crime_suspect);
-        mSuspectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // 第二个参数必须是大于等于0的
-                startActivityForResult(pickContact, REQUEST_CONTACT);
-            }
-        });
-        if (mCrime.getSuspect() != null) {
-            mSuspectButton.setText(mCrime.getSuspect());
-        }
-        PackageManager pm = Objects.requireNonNull(getActivity()).getPackageManager();
-        if (pm.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null) {
-            mSuspectButton.setEnabled(false);
-        }
-        mPhotoButton = view.findViewById(R.id.crime_camera);
-        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        boolean canTakePhoto = mPhotoFile != null && captureImage.resolveActivity(pm) != null;
-        mPhotoButton.setEnabled(canTakePhoto);
-        if (canTakePhoto) {
-            //i uri = Uri.fromFile(mPhotoFile);
-            Uri uri = FileProvider.getUriForFile(getActivity().getApplicationContext(),
-                    getActivity().getPackageName() + ".fileProvider",
-                    mPhotoFile);
-            captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-        }
-        mPhotoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivityForResult(captureImage, REQUEST_PHOTO);
-            }
-        });
-
-        mPhotoView = view.findViewById(R.id.crime_photo);
-        returnResult();
-        return view;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -272,6 +322,9 @@ public class CrimeFragment extends Fragment {
             Date date = (Date) Objects.requireNonNull(data).getSerializableExtra(TimePickerFragment.EXTRA_DATA);
             mCrime.setDate(date);
             mTimeButton.setText(mCrime.getFormatTime());
+        }
+        if (requestCode == REQUEST_PHOTO) {
+            updatePhotoView();
         }
         if (requestCode == REQUEST_CONTACT && data != null) {
             Uri contactUri = data.getData();
@@ -334,5 +387,15 @@ public class CrimeFragment extends Fragment {
         String suspect = mCrime.getSuspect();
         suspect = suspect == null ? getString(R.string.crime_report_no_suspect) : getString(R.string.crime_report_suspect, suspect);
         return getString(R.string.crime_report, mCrime.getTitle(), dateString, solvedString, suspect);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void updatePhotoView() {
+        if (mPhotoFile == null || !mPhotoFile.exists()) {
+            mPhotoView.setImageDrawable(null);
+        } else {
+            Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(), Objects.requireNonNull(getActivity()));
+            mPhotoView.setImageBitmap(bitmap);
+        }
     }
 }
