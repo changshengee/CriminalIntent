@@ -52,13 +52,21 @@
 
         <Button
             android:id="@+id/crime_date"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="50" />
+            android:layout_weight="25" />
+
+        <Button
+            android:id="@+id/crime_time_picker"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_weight="25" />
 
         <CheckBox
             android:id="@+id/crime_solved"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"

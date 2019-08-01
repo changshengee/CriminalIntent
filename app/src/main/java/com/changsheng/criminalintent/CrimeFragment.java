@@ -3,6 +3,7 @@ package com.changsheng.criminalintent;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -84,7 +85,33 @@ public class CrimeFragment extends Fragment {
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
     private File mPhotoFile;
+    private Callbacks mCallbacks;
 
+
+    /**
+     * Required interface for hosting activities
+     */
+    public interface Callbacks {
+        void onCrimeUpdated(Crime crime);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    private void updateCrime() {
+        CrimeLab.get(getActivity()).update(mCrime);
+        mCallbacks.onCrimeUpdated(mCrime);
+    }
 
     static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -242,9 +269,11 @@ public class CrimeFragment extends Fragment {
         mSolvedCheckBox = view.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.P)
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isSolved) {
                 mCrime.setSolved(isSolved);
+                updateCrime();
             }
         });
     }
@@ -288,9 +317,11 @@ public class CrimeFragment extends Fragment {
                 // This space intentionally left blank
             }
 
+            @RequiresApi(api = Build.VERSION_CODES.P)
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 mCrime.setTitle(charSequence.toString());
+                updateCrime();
             }
 
             @Override
@@ -307,6 +338,7 @@ public class CrimeFragment extends Fragment {
         Objects.requireNonNull(getActivity()).setResult(Activity.RESULT_OK, data);
     }
 
+    @TargetApi(Build.VERSION_CODES.P)
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -316,6 +348,7 @@ public class CrimeFragment extends Fragment {
         if (requestCode == REQUEST_DATE) {
             Date date = (Date) Objects.requireNonNull(data).getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
+            updateCrime();
             mDateButton.setText(mCrime.getFormatDate());
         }
         if (requestCode == REQUEST_TIME) {
@@ -325,6 +358,7 @@ public class CrimeFragment extends Fragment {
         }
         if (requestCode == REQUEST_PHOTO) {
             updatePhotoView();
+            updateCrime();
         }
         if (requestCode == REQUEST_CONTACT && data != null) {
             Uri contactUri = data.getData();
@@ -348,6 +382,7 @@ public class CrimeFragment extends Fragment {
                 c.moveToFirst();
                 String suspect = c.getString(0);
                 mCrime.setSuspect(suspect);
+                updateCrime();
                 mSuspectButton.setText(suspect);
             } finally {
                 Objects.requireNonNull(c).close();

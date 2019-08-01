@@ -23,7 +23,7 @@ import com.changsheng.criminalintent.entity.CrimeLab;
 /**
  * @author changshengee
  */
-public class CrimePagerActivity extends AppCompatActivity {
+public class CrimePagerActivity extends AppCompatActivity implements CrimeFragment.Callbacks{
 
     public static final String EXTRA_CRIME_ID = "com.changsheng.criminalintent.crime_id";
 
@@ -63,5 +63,10 @@ public class CrimePagerActivity extends AppCompatActivity {
         });
         int currentPosition = CrimeLab.get(this).getFocusPosition(crimeId);
         mViewPager.setCurrentItem(currentPosition);
+    }
+
+    @Override
+    public void onCrimeUpdated(Crime crime) {
+
     }
 }
